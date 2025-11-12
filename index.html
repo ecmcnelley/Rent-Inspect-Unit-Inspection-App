@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rent Inspect System</title>
+    <style>
+        :root {
+            --primary-color: #f97316;
+            --secondary-color: #6b7280;
+            --dark-color: #1f2937;
+            --danger-color: #dc2626;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--dark-color) 0%, #111827 100%);
+            color: white;
+            padding: 20px 30px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .header-info-table {
+            flex: 1;
+            max-width: 600px;
+        }
+
+        .property-info-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+
+        .property-info-table td {
+            padding: 4px 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: rgba(255,255,255,0.7);
+            width: 25%;
+            white-space: nowrap;
+        }
+
+        .info-value {
+            color: white;
+            width: 25%;
+        }
+
+        .header-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .header-logo {
+            max-width: 150px;
+            max-height: 60px;
+            display: block;
+        }
+
+        .header-title {
+            font-size: 13px;
+            margin: 0;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .no-print {
+            /* Hidden during print */
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+            }
+            .header {
+                padding: 15px 20px;
+                page-break-inside: avoid;
+            }
+            .property-info-table {
+                font-size: 9px;
+            }
+            .property-info-table td {
+                padding: 3px 6px;
+            }
+            .header-title {
+                font-size: 11px;
+            }
+            .header-logo {
+                max-width: 100px;
+                max-height: 50px;
+            }
+        }
+
+        .branding-footer {
+            font-size: 11px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.8);
+            text-align: center;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .settings-panel {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .settings-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 15px;
+        }
+
+        .color-picker-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .color-picker-item label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--secondary-color);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .color-picker-item input[type="color"] {
+            width: 100%;
+            height: 40px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+        }
+
+        .step-item {
+            flex: 1;
+            text-align: center;
+            padding: 15px 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .step-item.active {
+            background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .step-item .step-number {
+            display: inline-block;
+            width: 35px;
+            height: 35px;
+            line-height: 35px;
+            border-radius: 50%;
+            background: var(--secondary-color);
+            color: white;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .step-item.active .step-number {
+            background: var(--primary-color);
+        }
+
+        .step-item .step-label {
+            font-size: 14px;
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+
+        .step-item.active .step-label {
+            color: var(--dark-color);
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .color-picker-group {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #ea580c;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(249, 115, 22, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(107, 114, 128, 0.3);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th {
+            background: var(--dark-color);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        td input,
+        td select {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .room-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .room-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .room-card.active {
+            border-color: var(--primary-color);
+            background: #fff7ed;
+        }
+
+        .room-card-header {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 10px;
+        }
+
+        .room-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .report-section {
+            margin: 30px 0;
+        }
+
+        .report-section-title {
+            color: var(--dark-color);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .report-table {
+            width: 100%;
+            margin: 15px 0;
+        }
+
+        .report-table th {
+            background: var(--dark-color);
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .report-table td {
+            padding: 8px 10px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            cursor: pointer;
+            margin-bottom: 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .photo-upload-btn {
+            display: inline-block;
+            background: var(--success-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            margin: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .photo-upload-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 2px solid #60a5fa;
+        }
+
+        .logo-upload {
+            margin-bottom: 15px;
+        }
+
+        .logo-preview {
+            max-width: 200px;
+            max-height: 100px;
+            margin-top: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 5px;
+        }
+
+        input[type="file"] {
+            padding: 8px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-top">
+                <div class="header-info-table">
+                    <table class="property-info-table">
+                        <tr>
+                            <td class="info-label">Property Name:</td>
+                            <td class="info-value" id="headerPropertyName">-</td>
+                            <td class="info-label">Unit Number:</td>
+                            <td class="info-value" id="headerUnitNumber">-</td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Inspection Type:</td>
+                            <td class="info-value" id="headerInspectionType">-</td>
+                            <td class="info-label">Date:</td>
+                            <td class="info-value" id="headerDate">-</td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Inspector Name:</td>
+                            <td class="info-value" id="headerInspectorName">-</td>
+                            <td class="info-label">Temperature:</td>
+                            <td class="info-value" id="headerTemp">-</td>
+                        </tr>
+                        <tr>
+                            <td class="info-label">Property Address:</td>
+                            <td class="info-value" colspan="3" id="headerAddress">-</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="header-right">
+                    <img id="headerLogo" class="header-logo no-print" src="" alt="Logo" style="display: none;">
+                    <h1 class="header-title" id="headerTitle">RESIDENTIAL INSPECTION</h1>
+                </div>
+            </div>
+            <div class="branding-footer" id="brandingText">
+                Inspection System | Professional Property Documentation
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Customization Section -->
+            <div id="customizeSection" class="section active">
+                <div class="settings-panel no-print">
+                    <h3 class="settings-title">🎨 Customize Your Report</h3>
+                    
+                    <div class="form-group logo-upload">
+                        <label>Upload Company Logo:</label>
+                        <input type="file" id="logoUpload" accept="image/*">
+                        <img id="logoPreview" class="logo-preview" style="display: none;">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Header Title:</label>
+                        <input type="text" id="headerTitleInput" placeholder="Enter header title" value="RESIDENTIAL INSPECTION">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Branding Footer Text:</label>
+                        <input type="text" id="brandingInput" placeholder="Enter footer branding text" value="Inspection System | Professional Property Documentation">
+                    </div>
+
+                    <div class="color-picker-group">
+                        <div class="color-picker-item">
+                            <label>Primary Color:</label>
+                            <input type="color" id="primaryColor" value="#f97316">
+                        </div>
+                        <div class="color-picker-item">
+                            <label>Secondary Color:</label>
+                            <input type="color" id="secondaryColor" value="#6b7280">
+                        </div>
+                        <div class="color-picker-item">
+                            <label>Dark Color:</label>
+                            <input type="color" id="darkColor" value="#1f2937">
+                        </div>
+                    </div>
+
+                    <button class="btn btn-success" onclick="applyCustomization()">✓ Apply Customization</button>
+                </div>
+
+                <div class="button-group">
+                    <div></div>
+                    <button class="btn btn-primary" onclick="nextStep()">Next: Property Info →</button>
+                </div>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="step-indicator no-print" id="stepIndicator" style="display: none;">
+                <div class="step-item" onclick="goToStep(1)">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Property</div>
+                </div>
+                <div class="step-item" onclick="goToStep(2)">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Safety</div>
+                </div>
+                <div class="step-item" onclick="goToStep(3)">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Appliances</div>
+                </div>
+                <div class="step-item" onclick="goToStep(4)">
+                    <div class="step-number">4</div>
+                    <div class="step-label">Rooms</div>
+                </div>
+                <div class="step-item" onclick="goToStep(5)">
+                    <div class="step-number">5</div>
+                    <div class="step-label">Report</div>
+                </div>
+            </div>
+
+            <!-- Property Information Section -->
+            <div id="propertySection" class="section">
+                <h2>🏢 Property Information</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Property Name:</label>
+                        <input type="text" id="propertyName" placeholder="Enter property name">
+                    </div>
+                    <div class="form-group">
+                        <label>Unit Number:</label>
+                        <input type="text" id="unitNumber" placeholder="Enter unit number">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Property Address:</label>
+                    <input type="text" id="propertyAddress" placeholder="Enter full address">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Inspection Type:</label>
+                        <select id="inspectionType">
+                            <option>Move-In</option>
+                            <option>Move-Out</option>
+                            <option>Annual</option>
+                            <option>Routine</option>
+                            <option>Pre-Move-In</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date:</label>
+                        <input type="date" id="inspectionDate">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Inspector Name:</label>
+                        <input type="text" id="inspectorName" placeholder="Enter inspector name">
+                    </div>
+                    <div class="form-group">
+                        <label>Temperature (°F):</label>
+                        <input type="number" id="temperature" placeholder="Enter temperature">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="previousStep()">← Previous</button>
+                    <button class="btn btn-primary" onclick="nextStep()">Next: Safety →</button>
+                </div>
+            </div>
+
+            <!-- Safety Section -->
+            <div id="safetySection" class="section">
+                <h2>⚠️ Smoke/CO Alarms</h2>
+                <div class="table-container">
+                    <table id="safetyTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Location</th>
+                                <th>Type</th>
+                                <th>Power Source</th>
+                                <th>Alert Type</th>
+                                <th>Interconnected</th>
+                                <th>Condition</th>
+                                <th>Comments</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="safetyTableBody"></tbody>
+                    </table>
+                </div>
+                <button class="btn btn-success" onclick="addSmokeAlarm()">+ Add Alarm</button>
+
+                <div id="safetyPhotoButtons" style="margin-top: 20px;"></div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="previousStep()">← Previous</button>
+                    <button class="btn btn-primary" onclick="nextStep()">Next: Appliances →</button>
+                </div>
+            </div>
+
+            <!-- Appliances Section -->
+            <div id="appliancesSection" class="section">
+                <h2>🔌 Appliances</h2>
+                <div class="table-container">
+                    <table id="appliancesTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Location</th>
+                                <th>Type</th>
+                                <th>Brand</th>
+                                <th>Model</th>
+                                <th>Serial</th>
+                                <th>Condition</th>
+                                <th>Comments</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="appliancesTableBody"></tbody>
+                    </table>
+                </div>
+                <button class="btn btn-success" onclick="addAppliance()">+ Add Appliance</button>
+
+                <div id="appliancePhotoButtons" style="margin-top: 20px;"></div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="previousStep()">← Previous</button>
+                    <button class="btn btn-primary" onclick="nextStep()">Next: Rooms →</button>
+                </div>
+            </div>
+
+            <!-- Rooms Section -->
+            <div id="roomsSection" class="section">
+                <h2>🏠 Room-by-Room Inspection</h2>
+                
+                <div class="form-group">
+                    <label>Add Room:</label>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="roomTypeSelect" style="flex: 1;">
+                            <option value="bedroom">Bedroom</option>
+                            <option value="bathroom">Bathroom</option>
+                            <option value="kitchen">Kitchen</option>
+                            <option value="living_room">Living Room</option>
+                            <option value="dining_room">Dining Room</option>
+                            <option value="hallway">Hallway</option>
+                            <option value="closet">Closet</option>
+                            <option value="laundry">Laundry</option>
+                            <option value="garage">Garage</option>
+                            <option value="patio">Patio/Deck</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <input type="text" id="roomNameInput" placeholder="Room name (e.g., Master Bedroom)" style="flex: 2;">
+                        <button class="btn btn-success" onclick="addRoom()">+ Add</button>
+                    </div>
+                </div>
+
+                <div id="roomsList"></div>
+
+                <div id="roomInspectionForm" style="display: none;">
+                    <div class="room-nav">
+                        <button class="btn btn-secondary" onclick="previousRoom()">← Previous Room</button>
+                        <h3 id="currentRoomTitle"></h3>
+                        <button class="btn btn-secondary" onclick="nextRoom()">Next Room →</button>
+                    </div>
+
+                    <div id="roomFormContent"></div>
+
+                    <div id="roomPhotoButtons" style="margin-top: 20px;"></div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="previousStep()">← Previous</button>
+                    <button class="btn btn-primary" onclick="nextStep()">Generate Report →</button>
+                </div>
+            </div>
+
+            <!-- Report Section -->
+            <div id="reportSection" class="section">
+                <div class="button-group no-print" style="justify-content: center; margin-bottom: 30px;">
+                    <button class="btn btn-secondary" onclick="previousStep()">← Edit</button>
+                    <button class="btn btn-primary" onclick="printReport()">🖨️ Print Report</button>
+                    <button class="btn btn-success" onclick="emailReport()">📧 Email Report</button>
+                </div>
+
+                <div id="reportContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="photoInput" accept="image/*" style="display: none;">
+
+    <script>
+        let currentStep = 0;
+        let smokeAlarms = [];
+        let appliances = [];
+        let rooms = [];
+        let currentRoomIndex = -1;
+        let allPhotos = {
+            safety: [],
+            appliance: [],
+            room: []
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('inspectionDate').valueAsDate = new Date();
+            updateHeader();
+        });
+
+        // Logo upload
+        document.getElementById('logoUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const logoPreview = document.getElementById('logoPreview');
+                    const headerLogo = document.getElementById('headerLogo');
+                    logoPreview.src = event.target.result;
+                    logoPreview.style.display = 'block';
+                    headerLogo.src = event.target.result;
+                    headerLogo.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Customization
+        function applyCustomization() {
+            const primaryColor = document.getElementById('primaryColor').value;
+            const secondaryColor = document.getElementById('secondaryColor').value;
+            const darkColor = document.getElementById('darkColor').value;
+            const headerTitle = document.getElementById('headerTitleInput').value;
+            const brandingText = document.getElementById('brandingInput').value;
+
+            document.documentElement.style.setProperty('--primary-color', primaryColor);
+            document.documentElement.style.setProperty('--secondary-color', secondaryColor);
+            document.documentElement.style.setProperty('--dark-color', darkColor);
+
+            document.getElementById('headerTitle').textContent = headerTitle;
+            document.getElementById('brandingText').textContent = brandingText;
+
+            alert('Customization applied successfully!');
+        }
+
+        // Step navigation
+        function goToStep(step) {
+            if (step === 1 && currentStep === 0) {
+                nextStep();
+                return;
+            }
+
+            currentStep = step;
+            updateStepDisplay();
+        }
+
+        function nextStep() {
+            if (currentStep === 0) {
+                document.getElementById('customizeSection').classList.remove('active');
+                document.getElementById('stepIndicator').style.display = 'flex';
+                currentStep = 1;
+            } else if (currentStep === 4) {
+                saveCurrentRoomData();
+            }
+            
+            if (currentStep < 5) {
+                currentStep++;
+            }
+            
+            if (currentStep === 5) {
+                generateReport();
+            }
+            
+            updateStepDisplay();
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStepDisplay();
+            } else if (currentStep === 1) {
+                currentStep = 0;
+                document.getElementById('stepIndicator').style.display = 'none';
+                document.getElementById('customizeSection').classList.add('active');
+                document.querySelectorAll('.section').forEach(s => {
+                    if (s.id !== 'customizeSection') s.classList.remove('active');
+                });
+            }
+        }
+
+        function updateStepDisplay() {
+            const sections = ['propertySection', 'safetySection', 'appliancesSection', 'roomsSection', 'reportSection'];
+            sections.forEach((section, index) => {
+                document.getElementById(section).classList.toggle('active', index === currentStep - 1);
+            });
+
+            document.querySelectorAll('.step-item').forEach((item, index) => {
+                item.classList.toggle('active', index === currentStep - 1);
+            });
+
+            updateHeader();
+        }
+
+        // Header update
+        function updateHeader() {
+            const getPropertyName = () => {
+                const name = document.getElementById('propertyName').value;
+                return name || '-';
+            };
+
+            document.getElementById('headerPropertyName').textContent = getPropertyName();
+            document.getElementById('headerUnitNumber').textContent = document.getElementById('unitNumber').value || '-';
+            document.getElementById('headerAddress').textContent = document.getElementById('propertyAddress').value || '-';
+            document.getElementById('headerInspectionType').textContent = document.getElementById('inspectionType').value || '-';
+            
+            const dateValue = document.getElementById('inspectionDate').value;
+            if (dateValue) {
+                const date = new Date(dateValue + 'T00:00:00');
+                document.getElementById('headerDate').textContent = date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+            } else {
+                document.getElementById('headerDate').textContent = '-';
+            }
+            
+            document.getElementById('headerInspectorName').textContent = document.getElementById('inspectorName').value || '-';
+            
+            const temp = document.getElementById('temperature').value;
+            document.getElementById('headerTemp').textContent = temp ? `${temp}°F` : '-';
+        }
+
+        function getPropertyName() {
+            return document.getElementById('propertyName').value || 'Property';
+        }
+
+        // Listen for property info changes
+        ['propertyName', 'unitNumber', 'propertyAddress', 'inspectionType', 'inspectionDate', 'inspectorName', 'temperature'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', updateHeader);
+                element.addEventListener('input', updateHeader);
+            }
+        });
+
+        // Safety/Smoke Alarms
+        function addSmokeAlarm() {
+            const alarm = {
+                number: smokeAlarms.length + 1,
+                location: '',
+                type: '',
+                power: '',
+                alert: '',
+                interconnected: false,
+                condition: '',
+                comment: ''
+            };
+            smokeAlarms.push(alarm);
+            renderSafetyTable();
+        }
+
+        function renderSafetyTable() {
+            const tbody = document.getElementById('safetyTableBody');
+            tbody.innerHTML = '';
+            
+            smokeAlarms.forEach((alarm, index) => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${alarm.number}</td>
+                    <td><input type="text" value="${alarm.location}" onchange="updateSmokeAlarm(${index}, 'location', this.value)"></td>
+                    <td>
+                        <select onchange="updateSmokeAlarm(${index}, 'type', this.value)">
+                            <option value="">Select</option>
+                            <option value="Smoke" ${alarm.type === 'Smoke' ? 'selected' : ''}>Smoke</option>
+                            <option value="CO" ${alarm.type === 'CO' ? 'selected' : ''}>CO</option>
+                            <option value="Combo" ${alarm.type === 'Combo' ? 'selected' : ''}>Combo</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select onchange="updateSmokeAlarm(${index}, 'power', this.value)">
+                            <option value="">Select</option>
+                            <option value="Hardwired" ${alarm.power === 'Hardwired' ? 'selected' : ''}>Hardwired</option>
+                            <option value="Battery" ${alarm.power === 'Battery' ? 'selected' : ''}>Battery</option>
+                            <option value="Both" ${alarm.power === 'Both' ? 'selected' : ''}>Both</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select onchange="updateSmokeAlarm(${index}, 'alert', this.value)">
+                            <option value="">Select</option>
+                            <option value="Audible" ${alarm.alert === 'Audible' ? 'selected' : ''}>Audible</option>
+                            <option value="Visual" ${alarm.alert === 'Visual' ? 'selected' : ''}>Visual</option>
+                            <option value="Both" ${alarm.alert === 'Both' ? 'selected' : ''}>Both</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="checkbox" ${alarm.interconnected ? 'checked' : ''} onchange="updateSmokeAlarm(${index}, 'interconnected', this.checked)">
+                    </td>
+                    <td>
+                        <select onchange="updateSmokeAlarm(${index}, 'condition', this.value)">
+                            <option value="">Select</option>
+                            <option value="Good" ${alarm.condition === 'Good' ? 'selected' : ''}>Good</option>
+                            <option value="Fair" ${alarm.condition === 'Fair' ? 'selected' : ''}>Fair</option>
+                            <option value="Poor" ${alarm.condition === 'Poor' ? 'selected' : ''}>Poor</option>
+                            <option value="Missing" ${alarm.condition === 'Missing' ? 'selected' : ''}>Missing</option>
+                        </select>
+                    </td>
+                    <td><input type="text" value="${alarm.comment}" onchange="updateSmokeAlarm(${index}, 'comment', this.value)"></td>
+                    <td><button class="btn btn-danger" onclick="removeSmokeAlarm(${index})">✕</button></td>
+                `;
+            });
+
+            renderSafetyPhotoButtons();
+        }
+
+        function updateSmokeAlarm(index, field, value) {
+            smokeAlarms[index][field] = value;
+            renderSafetyPhotoButtons();
+        }
+
+        function removeSmokeAlarm(index) {
+            smokeAlarms.splice(index, 1);
+            smokeAlarms.forEach((alarm, i) => alarm.number = i + 1);
+            renderSafetyTable();
+        }
+
+        function renderSafetyPhotoButtons() {
+            const photoButtons = document.getElementById('safetyPhotoButtons');
+            photoButtons.innerHTML = '';
+
+            smokeAlarms.forEach((alarm, index) => {
+                if (alarm.comment) {
+                    const btn = document.createElement('button');
+                    btn.className = 'photo-upload-btn';
+                    const commentPreview = alarm.comment.substring(0, 30);
+                    btn.textContent = `📷 Alarm ${alarm.number} - ${alarm.location} - ${commentPreview}${alarm.comment.length > 30 ? '...' : ''}`;
+                    btn.onclick = () => triggerPhotoUpload('safety', `Alarm ${alarm.number} - ${alarm.location}`, alarm.comment);
+                    photoButtons.appendChild(btn);
+                }
+            });
+        }
+
+        // Appliances
+        function addAppliance() {
+            const appliance = {
+                number: appliances.length + 1,
+                location: '',
+                type: '',
+                brand: '',
+                model: '',
+                serial: '',
+                condition: '',
+                comment: ''
+            };
+            appliances.push(appliance);
+            renderAppliancesTable();
+        }
+
+        function renderAppliancesTable() {
+            const tbody = document.getElementById('appliancesTableBody');
+            tbody.innerHTML = '';
+            
+            appliances.forEach((app, index) => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${app.number}</td>
+                    <td><input type="text" value="${app.location}" onchange="updateAppliance(${index}, 'location', this.value)"></td>
+                    <td>
+                        <select onchange="updateAppliance(${index}, 'type', this.value)">
+                            <option value="">Select</option>
+                            <option value="Refrigerator" ${app.type === 'Refrigerator' ? 'selected' : ''}>Refrigerator</option>
+                            <option value="Stove/Oven" ${app.type === 'Stove/Oven' ? 'selected' : ''}>Stove/Oven</option>
+                            <option value="Dishwasher" ${app.type === 'Dishwasher' ? 'selected' : ''}>Dishwasher</option>
+                            <option value="Microwave" ${app.type === 'Microwave' ? 'selected' : ''}>Microwave</option>
+                            <option value="Washer" ${app.type === 'Washer' ? 'selected' : ''}>Washer</option>
+                            <option value="Dryer" ${app.type === 'Dryer' ? 'selected' : ''}>Dryer</option>
+                            <option value="HVAC" ${app.type === 'HVAC' ? 'selected' : ''}>HVAC</option>
+                            <option value="Water Heater" ${app.type === 'Water Heater' ? 'selected' : ''}>Water Heater</option>
+                            <option value="Other" ${app.type === 'Other' ? 'selected' : ''}>Other</option>
+                        </select>
+                    </td>
+                    <td><input type="text" value="${app.brand}" onchange="updateAppliance(${index}, 'brand', this.value)"></td>
+                    <td><input type="text" value="${app.model}" onchange="updateAppliance(${index}, 'model', this.value)"></td>
+                    <td><input type="text" value="${app.serial}" onchange="updateAppliance(${index}, 'serial', this.value)"></td>
+                    <td>
+                        <select onchange="updateAppliance(${index}, 'condition', this.value)">
+                            <option value="">Select</option>
+                            <option value="Excellent" ${app.condition === 'Excellent' ? 'selected' : ''}>Excellent</option>
+                            <option value="Good" ${app.condition === 'Good' ? 'selected' : ''}>Good</option>
+                            <option value="Fair" ${app.condition === 'Fair' ? 'selected' : ''}>Fair</option>
+                            <option value="Poor" ${app.condition === 'Poor' ? 'selected' : ''}>Poor</option>
+                            <option value="Not Working" ${app.condition === 'Not Working' ? 'selected' : ''}>Not Working</option>
+                        </select>
+                    </td>
+                    <td><input type="text" value="${app.comment}" onchange="updateAppliance(${index}, 'comment', this.value)"></td>
+                    <td><button class="btn btn-danger" onclick="removeAppliance(${index})">✕</button></td>
+                `;
+            });
+
+            renderAppliancePhotoButtons();
+        }
+
+        function updateAppliance(index, field, value) {
+            appliances[index][field] = value;
+            renderAppliancePhotoButtons();
+        }
+
+        function removeAppliance(index) {
+            appliances.splice(index, 1);
+            appliances.forEach((app, i) => app.number = i + 1);
+            renderAppliancesTable();
+        }
+
+        function renderAppliancePhotoButtons() {
+            const photoButtons = document.getElementById('appliancePhotoButtons');
+            photoButtons.innerHTML = '';
+
+            appliances.forEach((app, index) => {
+                if (app.comment) {
+                    const btn = document.createElement('button');
+                    btn.className = 'photo-upload-btn';
+                    const commentPreview = app.comment.substring(0, 30);
+                    btn.textContent = `📷 ${app.type} - ${app.location} - ${commentPreview}${app.comment.length > 30 ? '...' : ''}`;
+                    btn.onclick = () => triggerPhotoUpload('appliance', `${app.type} - ${app.location}`, app.comment);
+                    photoButtons.appendChild(btn);
+                }
+            });
+        }
+
+        // Photo handling
+        function triggerPhotoUpload(category, displayTitle, comment) {
+            const input = document.getElementById('photoInput');
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        if (!allPhotos[category]) {
+                            allPhotos[category] = [];
+                        }
+                        allPhotos[category].push({
+                            data: event.target.result,
+                            displayTitle: displayTitle,
+                            comment: comment
+                        });
+                        alert(`Photo added for: ${displayTitle}`);
+                    };
+                    reader.readAsDataURL(file);
+                }
+                input.value = '';
+            };
+            input.click();
+        }
+
+        // Rooms
+        function addRoom() {
+            const roomType = document.getElementById('roomTypeSelect').value;
+            const roomName = document.getElementById('roomNameInput').value.trim();
+            
+            if (!roomName) {
+                alert('Please enter a room name');
+                return;
+            }
+
+            const room = {
+                type: roomType,
+                name: roomName,
+                data: {}
+            };
+            
+            rooms.push(room);
+            document.getElementById('roomNameInput').value = '';
+            renderRoomsList();
+        }
+
+        function renderRoomsList() {
+            const roomsList = document.getElementById('roomsList');
+            roomsList.innerHTML = '';
+
+            if (rooms.length === 0) {
+                roomsList.innerHTML = '<div class="alert alert-info">No rooms added yet. Add your first room above.</div>';
+                document.getElementById('roomInspectionForm').style.display = 'none';
+                return;
+            }
+
+            rooms.forEach((room, index) => {
+                const card = document.createElement('div');
+                card.className = 'room-card';
+                if (index === currentRoomIndex) {
+                    card.classList.add('active');
+                }
+                card.innerHTML = `
+                    <div class="room-card-header">${room.name}</div>
+                    <button class="btn btn-secondary" onclick="selectRoom(${index})">Inspect</button>
+                    <button class="btn btn-danger" onclick="removeRoom(${index})">Delete</button>
+                `;
+                roomsList.appendChild(card);
+            });
+
+            if (currentRoomIndex === -1 && rooms.length > 0) {
+                selectRoom(0);
+            }
+        }
+
+        function selectRoom(index) {
+            saveCurrentRoomData();
+            currentRoomIndex = index;
+            renderRoomInspectionForm();
+            renderRoomsList();
+        }
+
+        function previousRoom() {
+            if (currentRoomIndex > 0) {
+                selectRoom(currentRoomIndex - 1);
+            }
+        }
+
+        function nextRoom() {
+            if (currentRoomIndex < rooms.length - 1) {
+                selectRoom(currentRoomIndex + 1);
+            }
+        }
+
+        function removeRoom(index) {
+            if (confirm('Are you sure you want to delete this room?')) {
+                rooms.splice(index, 1);
+                if (currentRoomIndex === index) {
+                    currentRoomIndex = rooms.length > 0 ? 0 : -1;
+                } else if (currentRoomIndex > index) {
+                    currentRoomIndex--;
+                }
+                renderRoomsList();
+                if (currentRoomIndex >= 0) {
+                    renderRoomInspectionForm();
+                }
+            }
+        }
+
+        function renderRoomInspectionForm() {
+            const room = rooms[currentRoomIndex];
+            if (!room) {
+                document.getElementById('roomInspectionForm').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('roomInspectionForm').style.display = 'block';
+            document.getElementById('currentRoomTitle').textContent = room.name;
+
+            const formContent = document.getElementById('roomFormContent');
+            formContent.innerHTML = getRoomFormHTML(room.type, room.data);
+
+            // Add change listeners to all form elements
+            formContent.querySelectorAll('input, select, textarea').forEach(element => {
+                element.addEventListener('change', function() {
+                    handleCheckboxDependencies(this);
+                    saveCurrentRoomData();
+                    renderRoomPhotoButtons();
+                });
+            });
+
+            // Initialize checkbox dependencies
+            formContent.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                handleCheckboxDependencies(checkbox);
+            });
+
+            renderRoomPhotoButtons();
+        }
+
+        function getRoomFormHTML(roomType, data) {
+            const commonFields = `
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_housekeeping" ${data.housekeeping ? 'checked' : ''}>
+                    <label for="${roomType}_housekeeping">Housekeeping (Clean)</label>
+                </div>
+                <textarea id="${roomType}_housekeeping_comment" class="form-group ${data.housekeeping ? '' : 'hidden'}" placeholder="Housekeeping comments...">${data.housekeeping_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_door" ${data.door ? 'checked' : ''}>
+                    <label for="${roomType}_door">Door (Good condition)</label>
+                </div>
+                <textarea id="${roomType}_door_comment" class="form-group ${data.door ? '' : 'hidden'}" placeholder="Door comments...">${data.door_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_threshold" ${data.threshold ? 'checked' : ''}>
+                    <label for="${roomType}_threshold">Threshold (Good condition)</label>
+                </div>
+                <textarea id="${roomType}_threshold_comment" class="form-group ${data.threshold ? '' : 'hidden'}" placeholder="Threshold comments...">${data.threshold_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_flooring" ${data.flooring ? 'checked' : ''}>
+                    <label for="${roomType}_flooring">Flooring (Good condition)</label>
+                </div>
+                <textarea id="${roomType}_flooring_comment" class="form-group ${data.flooring ? '' : 'hidden'}" placeholder="Flooring comments...">${data.flooring_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_walls" ${data.walls ? 'checked' : ''}>
+                    <label for="${roomType}_walls">Walls/Ceiling (Good condition)</label>
+                </div>
+                <textarea id="${roomType}_walls_comment" class="form-group ${data.walls ? '' : 'hidden'}" placeholder="Walls/ceiling comments...">${data.walls_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_bullnose" ${data.bullnose ? 'checked' : ''}>
+                    <label for="${roomType}_bullnose">Bullnose/Corners (Good condition)</label>
+                </div>
+                <textarea id="${roomType}_bullnose_comment" class="form-group ${data.bullnose ? '' : 'hidden'}" placeholder="Bullnose/corners comments...">${data.bullnose_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_outlets" ${data.outlets ? 'checked' : ''}>
+                    <label for="${roomType}_outlets">Outlets (Working, covers present)</label>
+                </div>
+                <textarea id="${roomType}_outlets_comment" class="form-group ${data.outlets ? '' : 'hidden'}" placeholder="Outlets comments...">${data.outlets_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_window_coverings" ${data.window_coverings ? 'checked' : ''}>
+                    <label for="${roomType}_window_coverings">Window Coverings (Present, functional)</label>
+                </div>
+                <textarea id="${roomType}_window_coverings_comment" class="form-group ${data.window_coverings ? '' : 'hidden'}" placeholder="Window coverings comments...">${data.window_coverings_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_window_sills" ${data.window_sills ? 'checked' : ''}>
+                    <label for="${roomType}_window_sills">Window Sills (Good condition)</label>
+                </div>
+                <textarea id="${roomType}_window_sills_comment" class="form-group ${data.window_sills ? '' : 'hidden'}" placeholder="Window sills comments...">${data.window_sills_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_window_screens" ${data.window_screens ? 'checked' : ''}>
+                    <label for="${roomType}_window_screens">Window Screens (Present, intact)</label>
+                </div>
+                <textarea id="${roomType}_window_screens_comment" class="form-group ${data.window_screens ? '' : 'hidden'}" placeholder="Window screens comments...">${data.window_screens_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_light_fixture" ${data.light_fixture ? 'checked' : ''}>
+                    <label for="${roomType}_light_fixture">Light Fixture (Working)</label>
+                </div>
+                <textarea id="${roomType}_light_fixture_comment" class="form-group ${data.light_fixture ? '' : 'hidden'}" placeholder="Light fixture comments...">${data.light_fixture_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_light_bulb" ${data.light_bulb ? 'checked' : ''}>
+                    <label for="${roomType}_light_bulb">Light Bulbs (All working)</label>
+                </div>
+                <textarea id="${roomType}_light_bulb_comment" class="form-group ${data.light_bulb ? '' : 'hidden'}" placeholder="Light bulbs comments...">${data.light_bulb_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_light_switch" ${data.light_switch ? 'checked' : ''}>
+                    <label for="${roomType}_light_switch">Light Switches (Working)</label>
+                </div>
+                <textarea id="${roomType}_light_switch_comment" class="form-group ${data.light_switch ? '' : 'hidden'}" placeholder="Light switches comments...">${data.light_switch_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_mold" ${data.mold ? 'checked' : ''}>
+                    <label for="${roomType}_mold">Mold (Present)</label>
+                </div>
+                <textarea id="${roomType}_mold_comment" class="form-group ${data.mold ? '' : 'hidden'}" placeholder="Mold comments...">${data.mold_comment || ''}</textarea>
+            `;
+
+            const bedroomFields = `
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_closet_door" ${data.closet_door ? 'checked' : ''}>
+                    <label for="${roomType}_closet_door">Closet Door (Working, good condition)</label>
+                </div>
+                <textarea id="${roomType}_closet_door_comment" class="form-group ${data.closet_door ? '' : 'hidden'}" placeholder="Closet door comments...">${data.closet_door_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_closet_opening" ${data.closet_opening ? 'checked' : ''}>
+                    <label for="${roomType}_closet_opening">Closet Opening (Proper size, no damage)</label>
+                </div>
+                <textarea id="${roomType}_closet_opening_comment" class="form-group ${data.closet_opening ? '' : 'hidden'}" placeholder="Closet opening comments...">${data.closet_opening_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_heater" ${data.heater ? 'checked' : ''}>
+                    <label for="${roomType}_heater">Heater (Working)</label>
+                </div>
+                <textarea id="${roomType}_heater_comment" class="form-group ${data.heater ? '' : 'hidden'}" placeholder="Heater comments...">${data.heater_comment || ''}</textarea>
+            `;
+
+            const bathroomFields = `
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_gfi" ${data.gfi ? 'checked' : ''}>
+                    <label for="${roomType}_gfi">GFI Outlet (Working, tested)</label>
+                </div>
+                <textarea id="${roomType}_gfi_comment" class="form-group ${data.gfi ? '' : 'hidden'}" placeholder="GFI comments...">${data.gfi_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_sink" ${data.sink ? 'checked' : ''}>
+                    <label for="${roomType}_sink">Sink (Good condition, drains properly)</label>
+                </div>
+                <textarea id="${roomType}_sink_comment" class="form-group ${data.sink ? '' : 'hidden'}" placeholder="Sink comments...">${data.sink_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_sink_plumbing" ${data.sink_plumbing ? 'checked' : ''}>
+                    <label for="${roomType}_sink_plumbing">Sink Plumbing (No leaks)</label>
+                </div>
+                <textarea id="${roomType}_sink_plumbing_comment" class="form-group ${data.sink_plumbing ? '' : 'hidden'}" placeholder="Sink plumbing comments...">${data.sink_plumbing_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_toilet_caulking" ${data.toilet_caulking ? 'checked' : ''}>
+                    <label for="${roomType}_toilet_caulking">Toilet Caulking (Good condition)</label>
+                </div>
+                <textarea id="${roomType}_toilet_caulking_comment" class="form-group ${data.toilet_caulking ? '' : 'hidden'}" placeholder="Toilet caulking comments...">${data.toilet_caulking_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_toilet_plumbing" ${data.toilet_plumbing ? 'checked' : ''}>
+                    <label for="${roomType}_toilet_plumbing">Toilet Plumbing (Working, no leaks)</label>
+                </div>
+                <textarea id="${roomType}_toilet_plumbing_comment" class="form-group ${data.toilet_plumbing ? '' : 'hidden'}" placeholder="Toilet plumbing comments...">${data.toilet_plumbing_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_tubshower" ${data.tubshower ? 'checked' : ''}>
+                    <label for="${roomType}_tubshower">Tub/Shower (Good condition, caulking intact)</label>
+                </div>
+                <textarea id="${roomType}_tubshower_comment" class="form-group ${data.tubshower ? '' : 'hidden'}" placeholder="Tub/shower comments...">${data.tubshower_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_shower_fixtures" ${data.shower_fixtures ? 'checked' : ''}>
+                    <label for="${roomType}_shower_fixtures">Shower Fixtures (Working properly)</label>
+                </div>
+                <textarea id="${roomType}_shower_fixtures_comment" class="form-group ${data.shower_fixtures ? '' : 'hidden'}" placeholder="Shower fixtures comments...">${data.shower_fixtures_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_shower_plumbing" ${data.shower_plumbing ? 'checked' : ''}>
+                    <label for="${roomType}_shower_plumbing">Shower Plumbing (No leaks)</label>
+                </div>
+                <textarea id="${roomType}_shower_plumbing_comment" class="form-group ${data.shower_plumbing ? '' : 'hidden'}" placeholder="Shower plumbing comments...">${data.shower_plumbing_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_medicine_cabinet" ${data.medicine_cabinet ? 'checked' : ''}>
+                    <label for="${roomType}_medicine_cabinet">Medicine Cabinet/Mirror (Good condition)</label>
+                </div>
+                <textarea id="${roomType}_medicine_cabinet_comment" class="form-group ${data.medicine_cabinet ? '' : 'hidden'}" placeholder="Medicine cabinet comments...">${data.medicine_cabinet_comment || ''}</textarea>
+            `;
+
+            const kitchenFields = `
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_gfi" ${data.gfi ? 'checked' : ''}>
+                    <label for="${roomType}_gfi">GFI Outlet (Working, tested)</label>
+                </div>
+                <textarea id="${roomType}_gfi_comment" class="form-group ${data.gfi ? '' : 'hidden'}" placeholder="GFI comments...">${data.gfi_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_sink" ${data.sink ? 'checked' : ''}>
+                    <label for="${roomType}_sink">Sink (Good condition, drains properly)</label>
+                </div>
+                <textarea id="${roomType}_sink_comment" class="form-group ${data.sink ? '' : 'hidden'}" placeholder="Sink comments...">${data.sink_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_sink_plumbing" ${data.sink_plumbing ? 'checked' : ''}>
+                    <label for="${roomType}_sink_plumbing">Sink Plumbing (No leaks)</label>
+                </div>
+                <textarea id="${roomType}_sink_plumbing_comment" class="form-group ${data.sink_plumbing ? '' : 'hidden'}" placeholder="Sink plumbing comments...">${data.sink_plumbing_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_cabinets" ${data.cabinets ? 'checked' : ''}>
+                    <label for="${roomType}_cabinets">Cabinets (Good condition, doors work)</label>
+                </div>
+                <textarea id="${roomType}_cabinets_comment" class="form-group ${data.cabinets ? '' : 'hidden'}" placeholder="Cabinets comments...">${data.cabinets_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_shelves" ${data.shelves ? 'checked' : ''}>
+                    <label for="${roomType}_shelves">Shelves (Secure, good condition)</label>
+                </div>
+                <textarea id="${roomType}_shelves_comment" class="form-group ${data.shelves ? '' : 'hidden'}" placeholder="Shelves comments...">${data.shelves_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_drawers" ${data.drawers ? 'checked' : ''}>
+                    <label for="${roomType}_drawers">Drawers (Working properly)</label>
+                </div>
+                <textarea id="${roomType}_drawers_comment" class="form-group ${data.drawers ? '' : 'hidden'}" placeholder="Drawers comments...">${data.drawers_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_drawer_tracks" ${data.drawer_tracks ? 'checked' : ''}>
+                    <label for="${roomType}_drawer_tracks">Drawer Tracks (Smooth operation)</label>
+                </div>
+                <textarea id="${roomType}_drawer_tracks_comment" class="form-group ${data.drawer_tracks ? '' : 'hidden'}" placeholder="Drawer tracks comments...">${data.drawer_tracks_comment || ''}</textarea>
+            `;
+
+            const livingFields = `
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_heater" ${data.heater ? 'checked' : ''}>
+                    <label for="${roomType}_heater">Heater (Working)</label>
+                </div>
+                <textarea id="${roomType}_heater_comment" class="form-group ${data.heater ? '' : 'hidden'}" placeholder="Heater comments...">${data.heater_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_thermostat" ${data.thermostat ? 'checked' : ''}>
+                    <label for="${roomType}_thermostat">Thermostat (Working properly)</label>
+                </div>
+                <textarea id="${roomType}_thermostat_comment" class="form-group ${data.thermostat ? '' : 'hidden'}" placeholder="Thermostat comments...">${data.thermostat_comment || ''}</textarea>
+            `;
+
+            const patioFields = `
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_surface" ${data.surface ? 'checked' : ''}>
+                    <label for="${roomType}_surface">Deck Surface (Good condition)</label>
+                </div>
+                <textarea id="${roomType}_surface_comment" class="form-group ${data.surface ? '' : 'hidden'}" placeholder="Deck surface comments...">${data.surface_comment || ''}</textarea>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="${roomType}_railing" ${data.railing ? 'checked' : ''}>
+                    <label for="${roomType}_railing">Deck Railing (Secure, good condition)</label>
+                </div>
+                <textarea id="${roomType}_railing_comment" class="form-group ${data.railing ? '' : 'hidden'}" placeholder="Deck railing comments...">${data.railing_comment || ''}</textarea>
+            `;
+
+            let html = commonFields;
+
+            if (roomType === 'bedroom') {
+                html += bedroomFields;
+            } else if (roomType === 'bathroom') {
+                html += bathroomFields;
+            } else if (roomType === 'kitchen') {
+                html += kitchenFields;
+            } else if (roomType === 'living_room' || roomType === 'dining_room') {
+                html += livingFields;
+            } else if (roomType === 'patio') {
+                html += patioFields;
+            }
+
+            return html;
+        }
+
+        function saveCurrentRoomData() {
+            if (currentRoomIndex < 0 || currentRoomIndex >= rooms.length) return;
+
+            const room = rooms[currentRoomIndex];
+            const formContent = document.getElementById('roomFormContent');
+            if (!formContent) return;
+
+            room.data = {};
+
+            // Save all checkboxes and their associated comments
+            formContent.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                const key = checkbox.id.replace(`${room.type}_`, '');
+                room.data[key] = checkbox.checked;
+            });
+
+            formContent.querySelectorAll('textarea').forEach(textarea => {
+                const key = textarea.id.replace(`${room.type}_`, '');
+                if (textarea.value) {
+                    room.data[key] = textarea.value;
+                }
+            });
+        }
+
+        function handleCheckboxDependencies(element) {
+            if (element.type === 'checkbox') {
+                const room = rooms[currentRoomIndex];
+                const commentId = element.id + '_comment';
+                const commentField = document.getElementById(commentId);
+                
+                if (commentField) {
+                    // For mold checkbox, show comment when checked
+                    if (element.id.includes('mold')) {
+                        if (element.checked) {
+                            commentField.classList.remove('hidden');
+                        } else {
+                            commentField.classList.add('hidden');
+                            commentField.value = '';
+                        }
+                    } else {
+                        // For other checkboxes, show comment when unchecked (issue found)
+                        if (!element.checked) {
+                            commentField.classList.remove('hidden');
+                        } else {
+                            commentField.classList.add('hidden');
+                            commentField.value = '';
+                        }
+                    }
+                }
+            }
+            
+            // Special handling for mold checkbox
+            const room = rooms[currentRoomIndex];
+            if (room) {
+                const moldCheckbox = document.getElementById(`${room.type}_mold`);
+                const commentField = document.getElementById(`${room.type}_mold_comment`);
+                
+                if (moldCheckbox && commentField) {
+                    if (moldCheckbox.checked) {
+                        commentField.classList.remove('hidden');
+                    } else {
+                        commentField.classList.add('hidden');
+                        commentField.value = '';
+                    }
+                }
+            }
+            
+            saveCurrentRoomData();
+            renderRoomPhotoButtons();
+        }
+
+        function renderRoomPhotoButtons() {
+            const room = rooms[currentRoomIndex];
+            if (!room) return;
+
+            const photoButtons = document.getElementById('roomPhotoButtons');
+            photoButtons.innerHTML = '';
+
+            // Define all possible comment fields
+            const commentFields = [
+                { id: `${room.type}_housekeeping_comment`, label: 'Housekeeping' },
+                { id: `${room.type}_door_comment`, label: 'Door' },
+                { id: `${room.type}_threshold_comment`, label: 'Threshold' },
+                { id: `${room.type}_flooring_comment`, label: 'Flooring' },
+                { id: `${room.type}_closet_door_comment`, label: 'Closet Door' },
+                { id: `${room.type}_closet_opening_comment`, label: 'Closet Opening' },
+                { id: `${room.type}_walls_comment`, label: 'Walls/Ceiling' },
+                { id: `${room.type}_bullnose_comment`, label: 'Bullnose/Corners' },
+                { id: `${room.type}_outlets_comment`, label: 'Outlets' },
+                { id: `${room.type}_gfi_comment`, label: 'GFI' },
+                { id: `${room.type}_mold_comment`, label: 'Mold' },
+                { id: `${room.type}_sink_comment`, label: 'Sink' },
+                { id: `${room.type}_sink_plumbing_comment`, label: 'Sink Plumbing' },
+                { id: `${room.type}_toilet_caulking_comment`, label: 'Toilet Caulking' },
+                { id: `${room.type}_toilet_plumbing_comment`, label: 'Toilet Plumbing' },
+                { id: `${room.type}_tubshower_comment`, label: 'Tub/Shower' },
+                { id: `${room.type}_shower_fixtures_comment`, label: 'Shower Fixtures' },
+                { id: `${room.type}_shower_plumbing_comment`, label: 'Shower Plumbing' },
+                { id: `${room.type}_medicine_cabinet_comment`, label: 'Medicine Cabinet/Mirror' },
+                { id: `${room.type}_cabinets_comment`, label: 'Cabinets' },
+                { id: `${room.type}_shelves_comment`, label: 'Shelves' },
+                { id: `${room.type}_drawers_comment`, label: 'Drawers' },
+                { id: `${room.type}_drawer_tracks_comment`, label: 'Drawer Tracks' },
+                { id: `${room.type}_heater_comment`, label: 'Heater' },
+                { id: `${room.type}_thermostat_comment`, label: 'Thermostat' },
+                { id: `${room.type}_window_coverings_comment`, label: 'Window Coverings' },
+                { id: `${room.type}_window_sills_comment`, label: 'Window Sills' },
+                { id: `${room.type}_window_screens_comment`, label: 'Window Screens' },
+                { id: `${room.type}_light_fixture_comment`, label: 'Light Fixture' },
+                { id: `${room.type}_light_bulb_comment`, label: 'Light Bulbs' },
+                { id: `${room.type}_light_switch_comment`, label: 'Light Switches' },
+                { id: `${room.type}_surface_comment`, label: 'Deck Surface' },
+                { id: `${room.type}_railing_comment`, label: 'Deck Railing' }
+            ];
+
+            // Generate photo buttons for each comment field that has content and is visible
+            commentFields.forEach(field => {
+                const commentElement = document.getElementById(field.id);
+                if (commentElement && commentElement.value && !commentElement.classList.contains('hidden')) {
+                    const btn = document.createElement('button');
+                    btn.className = 'photo-upload-btn';
+                    const commentPreview = commentElement.value.substring(0, 30);
+                    btn.textContent = `📷 ${room.name} - ${field.label} - ${commentPreview}${commentElement.value.length > 30 ? '...' : ''}`;
+                    btn.onclick = () => triggerPhotoUpload('room', `${room.name} - ${field.label}`, commentElement.value);
+                    photoButtons.appendChild(btn);
+                }
+            });
+        }
+
+        // Report generation
+        function generateReport() {
+            saveCurrentRoomData();
+
+            let report = `
+                <div class="report-section">
+                    <h2 style="text-align: center; color: var(--dark-color); margin-bottom: 30px; padding-top: 20px;">
+                        📋 INSPECTION REPORT
+                    </h2>
+                    <p style="text-align: center; color: var(--secondary-color); margin-bottom: 40px;">
+                        Property information is displayed in the header above
+                    </p>
+                </div>
+            `;
+
+            // Safety section
+            if (smokeAlarms.length > 0) {
+                report += '<div class="report-section"><h3 class="report-section-title">⚠️ Safety</h3>';
+                report += '<table class="report-table"><tr><th>#</th><th>Location</th><th>Type</th><th>Power</th><th>Alert</th><th>Interconnected</th><th>Condition</th><th>Comments</th></tr>';
+                smokeAlarms.forEach(alarm => {
+                    if (alarm.location || alarm.type || alarm.condition) {
+                        const interconnected = alarm.interconnected ? 'Yes' : 'No';
+                        report += `<tr><td>${alarm.number}</td><td>${alarm.location}</td><td>${alarm.type}</td><td>${alarm.power || ''}</td><td>${alarm.alert || ''}</td><td>${interconnected}</td><td>${alarm.condition}</td><td>${alarm.comment || ''}</td></tr>`;
+                    }
+                });
+                report += '</table>';
+                
+                if (allPhotos['safety'] && allPhotos['safety'].length > 0) {
+                    report += '<h4 style="margin-top: 20px;">Safety Photos:</h4><div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">';
+                    allPhotos['safety'].forEach(photo => {
+                        report += `<div><img src="${photo.data}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px;"><p style="font-size: 12px; margin-top: 5px;"><strong>${photo.displayTitle}</strong><br>${photo.comment}</p></div>`;
+                    });
+                    report += '</div>';
+                }
+                report += '</div>';
+            }
+
+            // Appliances section
+            if (appliances.length > 0) {
+                report += '<div class="report-section"><h3 class="report-section-title">🔌 Appliances</h3>';
+                report += '<table class="report-table"><tr><th>#</th><th>Location</th><th>Type</th><th>Brand</th><th>Model</th><th>Serial</th><th>Condition</th><th>Comments</th></tr>';
+                appliances.forEach(app => {
+                    if (app.type || app.brand || app.condition) {
+                        report += `<tr><td>${app.number}</td><td>${app.location || ''}</td><td>${app.type}</td><td>${app.brand}</td><td>${app.model}</td><td>${app.serial}</td><td>${app.condition}</td><td>${app.comment || ''}</td></tr>`;
+                    }
+                });
+                report += '</table>';
+                
+                if (allPhotos['appliance'] && allPhotos['appliance'].length > 0) {
+                    report += '<h4 style="margin-top: 20px;">Appliance Photos:</h4><div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">';
+                    allPhotos['appliance'].forEach(photo => {
+                        report += `<div><img src="${photo.data}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px;"><p style="font-size: 12px; margin-top: 5px;"><strong>${photo.displayTitle}</strong><br>${photo.comment}</p></div>`;
+                    });
+                    report += '</div>';
+                }
+                report += '</div>';
+            }
+
+            // Rooms section
+            if (rooms.length > 0) {
+                report += '<div class="report-section"><h3 class="report-section-title">🏠 Room Inspections</h3>';
+                rooms.forEach(room => {
+                    if (room.data && Object.keys(room.data).length > 0) {
+                        report += `<h4 style="margin-top: 20px; color: var(--dark-color);">${room.name}</h4>`;
+                        report += '<table class="report-table">';
+                        for (const [key, value] of Object.entries(room.data)) {
+                            if (value && value !== '' && value !== false) {
+                                const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                                report += `<tr><td><strong>${label}:</strong></td><td>${value}</td></tr>`;
+                            }
+                        }
+                        report += '</table>';
+                    }
+                });
+                
+                if (allPhotos['room'] && allPhotos['room'].length > 0) {
+                    report += '<h4 style="margin-top: 20px;">Room Photos:</h4><div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">';
+                    allPhotos['room'].forEach(photo => {
+                        report += `<div><img src="${photo.data}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px;"><p style="font-size: 12px; margin-top: 5px;"><strong>${photo.displayTitle}</strong><br>${photo.comment}</p></div>`;
+                    });
+                    report += '</div>';
+                }
+                report += '</div>';
+            }
+
+            report += `<div style="margin-top: 40px; text-align: center; color: #64748b; font-size: 12px;">${document.getElementById('brandingText').textContent}</div>`;
+
+            document.getElementById('reportContent').innerHTML = report;
+        }
+
+        function printReport() {
+            const propertyName = getPropertyName();
+            const unitNumber = document.getElementById('unitNumber').value;
+            const inspectionType = document.getElementById('inspectionType').value;
+            const date = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }).replace(/\//g, ' ');
+            
+            document.title = `${propertyName} ${unitNumber} ${inspectionType} ${date}`;
+            
+            window.print();
+        }
+
+        function emailReport() {
+            const propertyName = getPropertyName();
+            const unitNumber = document.getElementById('unitNumber').value;
+            const inspectionType = document.getElementById('inspectionType').value;
+            const date = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }).replace(/\//g, ' ');
+            
+            const subject = `${propertyName} ${unitNumber} ${inspectionType} ${date}`;
+            const body = `Please find attached the ${inspectionType} report for ${propertyName} Unit ${unitNumber}.
+
+Use the Print Report button to save the report as a PDF, then attach it to this email.`;
+            
+            window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        }
+    </script>
+</body>
+</html>
